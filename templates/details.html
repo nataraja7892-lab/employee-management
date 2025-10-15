@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Details Report</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --accent-color: #f8f9fa;
+            --text-dark: #2d3748;
+            --text-light: #718096;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .container {
+            max-width: 1400px;
+        }
+
+        .main-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 2rem 0;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .form-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .category-tabs {
+            border-bottom: 3px solid var(--border-color);
+            margin-bottom: 25px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .category-tab {
+            padding: 12px 24px;
+            border: 2px solid var(--border-color);
+            border-bottom: none;
+            border-radius: 10px 10px 0 0;
+            cursor: pointer;
+            background: var(--accent-color);
+            transition: all 0.3s ease;
+            font-weight: 600;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .category-tab:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+        }
+
+        .category-tab.active {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .category-tab.has-selections {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .checkbox-group {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            background: white;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .checkbox-item {
+            margin-bottom: 12px;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            transition: all 0.3s ease;
+            background: var(--accent-color);
+        }
+
+        .checkbox-item:hover {
+            background: #e3f2fd;
+            border-color: var(--primary-color);
+            transform: translateX(5px);
+        }
+
+        .form-check-input:checked {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .selected-fields {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border: 2px dashed var(--primary-color);
+        }
+
+        .employee-table {
+            margin-top: 30px;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .table th {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            font-weight: 600;
+            border: none;
+            padding: 15px;
+        }
+
+        .table td {
+            padding: 12px 15px;
+            border-color: var(--border-color);
+            vertical-align: middle;
+        }
+
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: rgba(102, 126, 234, 0.05);
+        }
+
+        .alert {
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .badge-count {
+            font-size: 0.7em;
+            margin-left: 5px;
+            background: white !important;
+            color: var(--primary-color) !important;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-outline-primary {
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--primary-color);
+            transform: translateY(-1px);
+        }
+
+        .form-select, .form-control {
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+
+        .form-select:focus, .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+
+        .selection-actions {
+            background: var(--accent-color);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 2px solid var(--border-color);
+        }
+
+        .field-label {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-left: 10px;
+        }
+
+        .category-icon {
+            font-size: 1.1em;
+        }
+
+        .stats-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .stats-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .stats-label {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        /* Custom scrollbar */
+        .checkbox-group::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .checkbox-group::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .checkbox-group::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 4px;
+        }
+
+        .checkbox-group::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary-color);
+        }
+
+        @media (max-width: 768px) {
+            .category-tabs {
+                flex-direction: column;
+            }
+            
+            .category-tab {
+                border-radius: 8px;
+                margin-bottom: 5px;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <!-- Main Header -->
+        <div class="main-header text-center">
+            <h1><i class="fas fa-chart-line me-3"></i>Employee Details Report</h1>
+            <p class="mb-0 opacity-75">Select departments and categories to generate detailed employee reports</p>
+        </div>
+
+        <!-- Filter Form -->
+        <div class="form-section">
+            <form method="get" id="employeeForm">
+                <!-- Hidden fields to maintain state -->
+                {% for category, category_data in all_categories_data.items %}
+                    {% for field in category_data.available_fields %}
+                        {% if field.checked %}
+                            <input type="hidden" name="fields_{{ category }}" value="{{ field.name }}">
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %}
+
+                <div class="row g-3">
+                    <!-- Department Selection -->
+                    <div class="col-md-8">
+                        <label for="department" class="form-label fw-bold">Select Department</label>
+                        <select name="department" id="department" class="form-select">
+                            <option value="">-- Select Department --</option>
+                            {% for dept in departments %}
+                                <option value="{{ dept.name }}" 
+                                    {% if dept.name == selected_department %}selected{% endif %}>
+                                    {{ dept.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-filter me-2"></i>Apply Filters
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Category Selection Section -->
+                {% if selected_department %}
+                <div class="mt-4">
+                    <h4 class="mb-3"><i class="fas fa-layer-group me-2"></i>Select Categories & Fields</h4>
+                    
+                    <!-- Category Tabs -->
+                    <div class="category-tabs">
+                        {% for category in categories %}
+                        <div class="category-tab {% if category == selected_category %}active{% endif %} {% if all_categories_data|get_item:category|get_item:'selected_count' > 0 %}has-selections{% endif %}" 
+                             onclick="switchCategory('{{ category }}')">
+                            <i class="category-icon fas 
+                                {% if category == 'personal' %}fa-user{% endif %}
+                                {% if category == 'professional' %}fa-briefcase{% endif %}
+                                {% if category == 'contact' %}fa-address-book{% endif %}
+                                {% if category == 'bank' %}fa-university{% endif %}
+                                {% if category == 'documents' %}fa-file-alt{% endif %}
+                                {% if category == 'basic' %}fa-id-card{% endif %}
+                            "></i>
+                            {{ category|title }}
+                            {% with category_data=all_categories_data|get_item:category %}
+                                {% if category_data.selected_count > 0 %}
+                                <span class="badge bg-primary badge-count">
+                                    {{ category_data.selected_count }}
+                                </span>
+                                {% endif %}
+                            {% endwith %}
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Fields Selection for Current Category -->
+                    {% if selected_category %}
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-list me-2"></i>{{ selected_category|title }} Fields
+                                </h5>
+                                <div class="selection-actions">
+                                    <button type="button" class="btn btn-sm btn-outline-primary me-2" onclick="selectAllFields()">
+                                        <i class="fas fa-check-square me-1"></i>Select All
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="deselectAllFields()">
+                                        <i class="fas fa-square me-1"></i>Deselect All
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="checkbox-group">
+                                {% for field in available_fields %}
+                                <div class="form-check checkbox-item">
+                                    <input class="form-check-input field-checkbox" 
+                                           type="checkbox" 
+                                           name="fields_{{ selected_category }}" 
+                                           value="{{ field.name }}" 
+                                           id="field_{{ selected_category }}_{{ forloop.counter }}"
+                                           {% if field.checked %}checked{% endif %}
+                                           onchange="updateForm()">
+                                    <label class="form-check-label field-label" for="field_{{ selected_category }}_{{ forloop.counter }}">
+                                        {{ field.label }}
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Selected Fields Summary -->
+                    {% if selected_fields %}
+                    <div class="selected-fields">
+                        <h6 class="mb-3">
+                            <i class="fas fa-check-circle me-2"></i>
+                            Selected Fields in {{ selected_category|title }} ({{ selected_fields|length }})
+                        </h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for field in selected_fields_labels %}
+                                <span class="badge bg-primary p-2">
+                                    <i class="fas fa-tag me-1"></i>{{ field.label }}
+                                </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Hidden field for category -->
+                <input type="hidden" name="category" id="categoryInput" value="{{ selected_category }}">
+            </form>
+        </div>
+
+        <!-- Statistics Cards -->
+        {% if selected_department %}
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-number">{{ total_selected_fields }}</div>
+                    <div class="stats-label">Total Fields Selected</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-number">{{ employees|length }}</div>
+                    <div class="stats-label">Employees Found</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-number">{{ categories|length }}</div>
+                    <div class="stats-label">Available Categories</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-number">1</div>
+                    <div class="stats-label">Active Category</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Messages -->
+        {% if message %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>{{ message }}
+        </div>
+        {% endif %}
+
+        <!-- Employee Data Table -->
+        {% if employees %}
+        <div class="employee-table">
+            <div class="p-4 border-bottom">
+                <h4 class="mb-0">
+                    <i class="fas fa-table me-2"></i>
+                    Employee Details - {{ selected_department }} 
+                    <span class="text-primary">({{ selected_category|title }})</span>
+                </h4>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Employee ID</th>
+                            <th>Name</th>
+                            {% for field in selected_fields_labels %}
+                                <th>{{ field.label }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for employee in employees %}
+                        <tr>
+                            <td class="fw-bold">{{ forloop.counter }}</td>
+                            <td>
+                                <span class="badge bg-dark">{{ employee.employee_id }}</span>
+                            </td>
+                            <td class="fw-semibold">{{ employee.name }}</td>
+                            {% for value in employee.values %}
+                                <td>
+                                    {% if value and value|slice:":4" == "/media" or value and value|slice:":4" == "http" %}
+                                        <a href="{{ value }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-external-link-alt me-1"></i>View Document
+                                        </a>
+                                    {% else %}
+                                        {{ value|default:"-" }}
+                                    {% endif %}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- No Data Message -->
+        {% if selected_department and selected_category and selected_fields and not employees and not message %}
+        <div class="alert alert-warning text-center">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            No employee data found for the selected criteria.
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        // Switch between categories
+        function switchCategory(category) {
+            document.getElementById('categoryInput').value = category;
+            document.getElementById('employeeForm').submit();
+        }
+
+        // Update form when checkboxes change
+        function updateForm() {
+            // The form will maintain state through hidden fields
+            const checkboxes = document.querySelectorAll('.field-checkbox:checked');
+            console.log(${checkboxes.length} fields selected in current category);
+            
+            // Auto-submit after a short delay to save selections
+            setTimeout(() => {
+                document.getElementById('employeeForm').submit();
+            }, 500);
+        }
+
+        // Select all fields in current category
+        function selectAllFields() {
+            const checkboxes = document.querySelectorAll('.field-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = true;
+            });
+            showSelectionFeedback('All fields selected!');
+            setTimeout(() => {
+                document.getElementById('employeeForm').submit();
+            }, 300);
+        }
+
+        // Deselect all fields in current category
+        function deselectAllFields() {
+            const checkboxes = document.querySelectorAll('.field-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            showSelectionFeedback('All fields deselected!');
+            setTimeout(() => {
+                document.getElementById('employeeForm').submit();
+            }, 300);
+        }
+
+        // Show selection feedback
+        function showSelectionFeedback(message) {
+            // Create a temporary toast notification
+            const toast = document.createElement('div');
+            toast.className = 'alert alert-info position-fixed top-0 end-0 m-3';
+            toast.style.zIndex = '9999';
+            toast.innerHTML = `
+                <i class="fas fa-check-circle me-2"></i>${message}
+            `;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 2000);
+        }
+
+        // Show loading state
+        document.getElementById('employeeForm').addEventListener('submit', function() {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Loading...';
+                submitBtn.disabled = true;
+            }
+        });
+
+        // Auto-submit when department changes
+        document.getElementById('department').addEventListener('change', function() {
+            document.getElementById('employeeForm').submit();
+        });
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+A to select all fields in current category
+            if (e.ctrlKey && e.key === 'a') {
+                e.preventDefault();
+                selectAllFields();
+            }
+            // Ctrl+D to deselect all fields in current category
+            if (e.ctrlKey && e.key === 'd') {
+                e.preventDefault();
+                deselectAllFields();
+            }
+        });
+
+        // Initialize category tabs with proper selection state
+        document.addEventListener('DOMContentLoaded', function() {
+            const categoryTabs = document.querySelectorAll('.category-tab');
+            categoryTabs.forEach(tab => {
+                // Check if this category has selections by counting checked checkboxes
+                const category = tab.textContent.trim().toLowerCase();
+                const hasSelections = document.querySelectorAll(input[name="fields_${category}"]:checked).length > 0;
+                
+                if (hasSelections && !tab.classList.contains('active')) {
+                    tab.classList.add('has-selections');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

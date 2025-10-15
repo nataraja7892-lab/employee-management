@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Analytics Dashboard | Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #667eea;
+            --primary-dark: #5a6fd8;
+            --secondary: #764ba2;
+            --success: #10b981;
+            --success-dark: #0f5132;
+            --info: #0dcaf0;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gradient-primary: linear-gradient(135deg, var(--primary), var(--secondary));
+            --gradient-success: linear-gradient(135deg, var(--success), #059669);
+            --gradient-purple: linear-gradient(135deg, #667eea, #764ba2);
+            --gradient-pink: linear-gradient(135deg, #f093fb, #f5576c);
+            --gradient-blue: linear-gradient(135deg, #4facfe, #00f2fe);
+            --gradient-green: linear-gradient(135deg, #43e97b, #38f9d7);
+            --gradient-orange: linear-gradient(135deg, #ff9a9e, #fad0c4);
+            --gradient-teal: linear-gradient(135deg, #a1c4fd, #c2e9fb);
+            --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 5px 20px rgba(0, 0, 0, 0.12);
+            --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        body {
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        /* Header Styles - Matching Landing Page */
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        header.scrolled {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 6%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo i {
+            font-size: 1.8rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .user-name {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #4b5563;
+            font-weight: 500;
+        }
+
+        .user-name i {
+            color: var(--primary);
+        }
+
+        .logout-btn {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 0.7rem 1.8rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .dashboard-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            min-height: calc(100vh - 40px);
+            position: relative;
+            margin-top: 80px;
+        }
+
+        .main-content {
+            padding: 30px;
+            background: #f8f9fa;
+        }
+
+        /* Page Header - Matching Landing Page */
+        .page-header {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-header h1 {
+            font-size: 2.2rem;
+            color: #1a1a1a;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            line-height: 1.2;
+        }
+
+        .page-header p {
+            color: #6b7280;
+            font-size: 1.1rem;
+        }
+
+        /* Stats Section - Icon Based - Matching Landing Page */
+        .stats-section {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 25px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-icon-container {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 30px;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s ease;
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .stat-item:hover .stat-icon-container {
+            transform: scale(1.1);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: #1a1a1a;
+        }
+
+        .stat-label {
+            color: var(--secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Category Pills - Enhanced */
+        .category-pill {
+            background: var(--gradient-purple);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 12px 25px;
+            margin: 5px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .category-pill::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .category-pill:hover::before {
+            left: 100%;
+        }
+
+        .category-pill:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .category-pill.active {
+            background: var(--gradient-pink);
+            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
+        }
+
+        .category-pill.has-selection {
+            background: var(--gradient-blue);
+        }
+
+        /* Icon Buttons */
+        .icon-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            border: none;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+            color: white;
+        }
+
+        .icon-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: var(--shadow-md);
+        }
+
+        .icon-btn-small {
+            width: 45px;
+            height: 45px;
+            font-size: 18px;
+        }
+
+        .btn-csv {
+            background: var(--gradient-green);
+        }
+
+        .btn-excel {
+            background: var(--gradient-success);
+        }
+
+        .btn-print {
+            background: var(--gradient-blue);
+        }
+
+        .btn-refresh {
+            background: var(--gradient-purple);
+        }
+
+        .btn-reset {
+            background: var(--gradient-orange);
+        }
+
+        .btn-select-all {
+            background: var(--gradient-primary);
+        }
+
+        .btn-clear-all {
+            background: var(--gradient-teal);
+            color: #333;
+        }
+
+        /* Table Styling */
+        .table-advanced {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            transition: box-shadow 0.3s ease;
+            border: 1px solid #e5e7eb;
+        }
+
+        .table-advanced:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .table-advanced th {
+            background: var(--gradient-primary);
+            color: white;
+            font-weight: 600;
+            padding: 18px 15px;
+            border: none;
+            position: sticky;
+            top: 0;
+        }
+
+        .table-advanced td {
+            padding: 14px 15px;
+            vertical-align: middle;
+            border-color: #f1f3f4;
+        }
+
+        .table-advanced tbody tr {
+            transition: background-color 0.2s ease;
+        }
+
+        .table-advanced tbody tr:hover {
+            background-color: rgba(102, 126, 234, 0.05);
+        }
+
+        /* Form Elements */
+        .form-select-custom {
+            border-radius: 12px;
+            padding: 12px 20px;
+            border: 2px solid #e5e7eb;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .form-select-custom:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+
+        .field-checkbox {
+            transform: scale(1.2);
+            margin-right: 10px;
+        }
+
+        .checkbox-item {
+            transition: all 0.3s ease;
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .checkbox-item:hover {
+            background-color: rgba(102, 126, 234, 0.05);
+            transform: translateX(5px);
+            border-color: var(--primary);
+        }
+
+        /* Badges and Alerts */
+        .badge-custom {
+            font-size: 0.75em;
+            padding: 5px 10px;
+            border-radius: 12px;
+        }
+
+        .section-header {
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            color: white;
+            font-size: 18px;
+        }
+
+        .progress-indicator {
+            height: 4px;
+            background: var(--gradient-primary);
+            width: 0%;
+            transition: width 0.3s ease;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1001;
+        }
+
+        /* Floating Action */
+        .floating-action {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+        }
+
+        .floating-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s ease;
+        }
+
+        .floating-btn:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                margin: 10px;
+                border-radius: 15px;
+                margin-top: 70px;
+            }
+            .main-content {
+                padding: 20px;
+            }
+            .category-pill {
+                padding: 10px 15px;
+                font-size: 0.9em;
+            }
+            .stat-icon-container {
+                width: 60px;
+                height: 60px;
+                font-size: 24px;
+            }
+            .stat-value {
+                font-size: 1.5rem;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+        }
+
+        /* Animation for stats */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-item {
+            animation: fadeInUp 0.5s ease forwards;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary);
+        }
+
+        /* Back to Dashboard Button */
+        .back-btn {
+            background: white;
+            color: var(--primary);
+            padding: 0.7rem 1.5rem;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            margin-bottom: 1rem;
+        }
+
+        .back-btn:hover {
+            background: #f0f9ff;
+            transform: translateY(-1px);
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .logo-img {
+            width: 60px;
+            height: 50px;
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header - Matching Landing Page -->
+    <header id="header">
+        <nav>
+            <div class="logo" onclick="gotodash()">
+                <img src="{% static 'images/icon.png' %}" alt="Logo" class="logo-img">
+                <span>EmpManage Reports</span>
+            </div>
+            <div class="user-info">
+                <a href="{% url 'dashboard' %}" class="back-btn">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Dashboard
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="text-center">
+            <div class="spinner-border text-light mb-3" style="width: 3rem; height: 3rem;"></div>
+            <h4>Processing Your Request...</h4>
+            <p>Please wait while we generate your report</p>
+        </div>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- Progress Indicator -->
+        <div class="progress-indicator" id="progressBar"></div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div>
+                    <h1>Employee Reports and Details</h1>
+                    <p>Generate comprehensive employee reports and analytics</p>
+                </div>
+            </div>
+
+
+            <!-- Main Form -->
+            <form method="get" id="employeeForm">
+                <div class="stats-section">
+                    <div class="section-header">
+                        <h4 class="mb-0">
+                            <i class="fas fa-sliders-h me-2" style="color: var(--primary);"></i>
+                            Report Configuration
+                        </h4>
+                    </div>
+                    
+                    <!-- Department Selection -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold fs-5">Select Department</label>
+                            <select name="department" class="form-select form-select-custom" onchange="showLoading(); this.form.submit()">
+                                <option value="">Choose a Department...</option>
+                                <option value="All" {% if selected_department == "All" %}selected{% endif %}>All Employees</option>
+                                <option value="Teaching" {% if selected_department == "Teaching" %}selected{% endif %}>Teaching Staff</option>
+                                <option value="Non-Teaching" {% if selected_department == "Non-Teaching" %}selected{% endif %}>Non-Teaching Staff</option>
+                                {% for dept in departments %}
+                                    <option value="{{ dept.name }}" {% if dept.name == selected_department %}selected{% endif %}>
+                                        {{ dept.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end justify-content-end">
+                            {% if employees %}
+                            <div class="d-flex gap-3">
+                                <a href="/export-csv/?{{ export_params }}" class="icon-btn btn-csv" onclick="showLoading()" title="Export CSV">
+                                    <i class="fas fa-file-csv"></i>
+                                </a>
+                                <a href="/export-excel/?{{ export_params }}" class="icon-btn btn-excel" onclick="showLoading()" title="Export Excel">
+                                    <i class="fas fa-file-excel"></i>
+                                </a>
+                                <button type="button" onclick="printTable()" class="icon-btn btn-print" title="Print Report">
+                                    <i class="fas fa-print"></i>
+                                </button>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Selected Fields Summary -->
+                    {% if total_selected_count > 0 %}
+                    <div class="alert alert-success mb-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong><i class="fas fa-check-circle me-2"></i>Selected Fields ({{ total_selected_count }})</strong>
+                                <div class="mt-2">
+                                    {% for field in all_selected_fields_labels %}
+                                        <span class="badge bg-primary me-1 mb-1 badge-custom">{{ field.label }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% if employees %}
+                            <div class="text-end">
+                                <strong class="fs-5">{{ employees|length }} Employees</strong>
+                                <br>
+                                <small class="text-muted">{{ selected_department }} Department</small>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Category Selection -->
+                    {% if selected_department %}
+                    <div class="mb-4">
+                        <label class="form-label fw-bold fs-5">Data Categories</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for category in categories %}
+                                {% for cat_key, cat_data in all_categories_data.items %}
+                                    {% if cat_key == category %}
+                                    <button type="button" 
+                                            class="btn category-pill {% if category == selected_category %}active{% endif %} {% if cat_data.selected_count > 0 %}has-selection{% endif %}"
+                                            onclick="switchCategory('{{ category }}')">
+                                        <i class="fas fa-{% if category == 'basic' %}id-card{% elif category == 'personal' %}user{% elif category == 'professional' %}briefcase{% elif category == 'contact' %}address-book{% elif category == 'bank' %}university{% else %}file-alt{% endif %} me-2"></i>
+                                        {{ category|title }}
+                                        {% if cat_data.selected_count > 0 %}
+                                        <span class="badge bg-light text-dark ms-2">{{ cat_data.selected_count }}</span>
+                                        {% endif %}
+                                    </button>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Field Selection -->
+                    {% if selected_department and selected_category %}
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5>
+                                <i class="fas fa-list-ul me-2" style="color: var(--primary);"></i>
+                                {{ selected_category|title }} Fields
+                                <span class="badge bg-secondary ms-2">{{ available_fields|length }} fields</span>
+                            </h5>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="icon-btn btn-select-all icon-btn-small" onclick="selectAllFields()" title="Select All">
+                                    <i class="fas fa-check-double"></i>
+                                </button>
+                                <button type="button" class="icon-btn btn-clear-all icon-btn-small" onclick="deselectAllFields()" title="Clear All">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="row">
+                            {% for field in available_fields %}
+                            <div class="col-md-4 col-lg-3 mb-3">
+                                <div class="form-check checkbox-item p-3 border rounded">
+                                    <input class="form-check-input field-checkbox" 
+                                           type="checkbox" 
+                                           name="fields_{{ selected_category }}" 
+                                           value="{{ field.name }}" 
+                                           {% if field.checked %}checked{% endif %}
+                                           onchange="showLoading(); this.form.submit()">
+                                    <label class="form-check-label fw-medium">
+                                        {{ field.display_label }}
+                                        {% if 'photo' in field.name %}
+                                            <i class="fas fa-image ms-1 text-info" title="Image Field"></i>
+                                        {% elif 'certificate' in field.name or 'letter' in field.name %}
+                                            <i class="fas fa-file ms-1 text-warning" title="Document Field"></i>
+                                        {% elif 'email' in field.name %}
+                                            <i class="fas fa-envelope ms-1 text-primary" title="Email Field"></i>
+                                        {% elif 'mobile' in field.name or 'phone' in field.name %}
+                                            <i class="fas fa-phone ms-1 text-success" title="Phone Field"></i>
+                                        {% endif %}
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Hidden Fields -->
+                    {% for category, data in all_categories_data.items %}
+                        {% if category != selected_category %}
+                            {% for field in data.available_fields %}
+                                {% if field.checked %}
+                                    <input type="hidden" name="fields_{{ category }}" value="{{ field.name }}">
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    {% endfor %}
+                    
+                    <input type="hidden" name="category" id="categoryInput" value="{{ selected_category }}">
+                </div>
+            </form>
+
+            <!-- Results Table -->
+            {% if employees %}
+            <div class="stats-section">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="mb-0">
+                        <i class="fas fa-table me-2" style="color: var(--primary);"></i>
+                        Employee Data - {{ selected_department }}
+                    </h4>
+                    <div class="text-muted">
+                        <i class="fas fa-clock me-1"></i>
+                        Generated: {{ current_time }}
+                    </div>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-advanced">
+                        <thead>
+                            <tr>
+                                <th width="60" class="text-center">#</th>
+                                <th width="120">Employee ID</th>
+                                <th width="200">Full Name</th>
+                                {% for field in all_selected_fields_labels %}
+                                    <th>{{ field.label }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for employee in employees %}
+                            <tr>
+                                <td class="fw-bold text-center">{{ forloop.counter }}</td>
+                                <td class="fw-bold" style="color: var(--primary);">
+                                    <i class="fas fa-id-card me-1"></i>
+                                    {{ employee.employee_id }}
+                                </td>
+                                <td class="fw-bold">
+                                    <i class="fas fa-user me-1 text-secondary"></i>
+                                    {{ employee.name }}
+                                </td>
+                                {% for value in employee.values %}
+                                    <td class="align-middle">
+                                        {% autoescape off %}
+                                            {{ value }}
+                                        {% endautoescape %}
+                                    </td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Export Section -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            <div class="row">
+                                <div class="col-md-4 text-center">
+                                    <a href="/export-csv/?{{ export_params }}" class="icon-btn btn-csv mx-auto mb-2 d-flex align-items-center justify-content-center" onclick="showLoading()" title="Download CSV">
+                                        <i class="fas fa-file-csv"></i>
+                                    </a>
+                                    <small class="text-muted">Comma-separated values</small>
+                                </div>
+                                <div class="col-md-4 text-center">
+                                    <a href="/export-excel/?{{ export_params }}" class="icon-btn btn-excel mx-auto mb-2 d-flex align-items-center justify-content-center" onclick="showLoading()" title="Download Excel">
+                                        <i class="fas fa-file-excel"></i>
+                                    </a>
+                                    <small class="text-muted">Spreadsheet format</small>
+                                </div>
+                                <div class="col-md-4 text-center">
+                                    <button onclick="printTable()" class="icon-btn btn-print mx-auto mb-2 d-flex align-items-center justify-content-center" title="Print Report">
+                                        <i class="fas fa-print"></i>
+                                    </button>
+                                    <small class="text-muted">Print-friendly version</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Messages -->
+            {% if message %}
+            <div class="stats-section">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    {{ message }}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- No Data Message -->
+            {% if selected_department and total_selected_count > 0 and not employees and not message %}
+            <div class="stats-section text-center py-5">
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">No Data Found</h4>
+                <p class="text-muted">No employees found in <strong>{{ selected_department }}</strong> with the selected criteria.</p>
+                <button class="icon-btn btn-reset mt-3" onclick="deselectAllFields()" title="Reset Selections">
+                    <i class="fas fa-redo"></i>
+                </button>
+            </div>
+            {% endif %}
+
+            <!-- Welcome Message -->
+            {% if not selected_department %}
+            <div class="stats-section text-center py-5">
+                <i class="fas fa-chart-line fa-4x mb-4" style="color: var(--primary);"></i>
+                <h3 style="color: var(--primary);">Welcome to Employee Reports Dashboard</h3>
+                <p class="text-muted fs-5">Select a department to start generating comprehensive employee reports</p>
+                <div class="row mt-4">
+                    <div class="col-md-4">
+                        <i class="fas fa-filter fa-2x mb-2" style="color: var(--success);"></i>
+                        <h5>Filter Data</h5>
+                        <p class="text-muted">Select specific fields from multiple categories</p>
+                    </div>
+                    <div class="col-md-4">
+                        <i class="fas fa-download fa-2x mb-2" style="color: var(--info);"></i>
+                        <h5>Export Reports</h5>
+                        <p class="text-muted">Download data in CSV, Excel formats</p>
+                    </div>
+                    <div class="col-md-4">
+                        <i class="fas fa-chart-bar fa-2x mb-2" style="color: var(--warning);"></i>
+                        <h5>Analyze</h5>
+                        <p class="text-muted">Gain insights from employee data</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <div class="floating-action">
+        <div class="btn-group dropup">
+            <button type="button" class="floating-btn" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-bolt"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end p-2" style="border-radius: 15px; box-shadow: var(--shadow-md);">
+                <li><a class="dropdown-item rounded p-2" href="#" onclick="showLoading(); document.getElementById('employeeForm').submit();">
+                    <i class="fas fa-sync me-2"></i>Refresh Data
+                </a></li>
+                <li><a class="dropdown-item rounded p-2" href="#" onclick="printTable()">
+                    <i class="fas fa-print me-2"></i>Print Report
+                </a></li>
+                <li><hr class="dropdown-divider my-2"></li>
+                <li><a class="dropdown-item rounded p-2" href="/export-excel/?{{ export_params }}" onclick="showLoading()">
+                    <i class="fas fa-download me-2"></i>Export All Data
+                </a></li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Category switching
+        function switchCategory(category) {
+            showLoading();
+            document.getElementById('categoryInput').value = category;
+            document.getElementById('employeeForm').submit();
+        }
+        
+        // Select all fields in current category
+        function selectAllFields() {
+            showLoading();
+            const checkboxes = document.querySelectorAll('input[name="fields_{{ selected_category }}"]');
+            checkboxes.forEach(checkbox => checkbox.checked = true);
+            document.getElementById('employeeForm').submit();
+        }
+        
+        // Deselect all fields in current category
+        function deselectAllFields() {
+            showLoading();
+            const checkboxes = document.querySelectorAll('input[name="fields_{{ selected_category }}"]');
+            checkboxes.forEach(checkbox => checkbox.checked = false);
+            document.getElementById('employeeForm').submit();
+        }
+
+        // Loading overlay
+        function showLoading() {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.width = '100%';
+            
+            // Auto-hide after 5 seconds (safety measure)
+            setTimeout(() => {
+                document.getElementById('loadingOverlay').style.display = 'none';
+                progressBar.style.width = '0%';
+            }, 5000);
+        }
+
+        // Hide loading when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+            document.getElementById('progressBar').style.width = '0%';
+            
+            // Initialize tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+
+            // Header scroll effect
+            window.addEventListener('scroll', function() {
+                const header = document.getElementById('header');
+                if (window.scrollY > 10) {
+                    header.classList.add('scrolled');
+                } else {
+                    header.classList.remove('scrolled');
+                }
+            });
+        });
+
+        // Enhanced print function
+        function printTable() {
+            const printContent = document.querySelector('.table-advanced').cloneNode(true);
+            const originalContent = document.body.innerHTML;
+            const currentDate = new Date().toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            // Create print-friendly version
+            document.body.innerHTML = `
+                <html>
+                    <head>
+                        <title>Employee Report - {{ selected_department }}</title>
+                        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+                        <style>
+                            body { 
+                                padding: 30px; 
+                                font-family: Arial, sans-serif;
+                                background: white;
+                            }
+                            .table { 
+                                width: 100%; 
+                                border-collapse: collapse;
+                                font-size: 12px;
+                            }
+                            .table th { 
+                                background: #667eea !important; 
+                                color: white !important; 
+                                padding: 12px;
+                                border: 1px solid #dee2e6;
+                                font-weight: bold;
+                            }
+                            .table td {
+                                padding: 8px 12px;
+                                border: 1px solid #dee2e6;
+                                vertical-align: middle;
+                            }
+                            .table-striped tbody tr:nth-of-type(odd) {
+                                background-color: rgba(0,0,0,.02);
+                            }
+                            .report-header {
+                                border-bottom: 2px solid #333;
+                                padding-bottom: 20px;
+                                margin-bottom: 20px;
+                            }
+                            @media print {
+                                body { padding: 0; margin: 0; }
+                                .table { font-size: 10px; }
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="report-header">
+                            <h1>Employee Report - {{ selected_department }}</h1>
+                            <p><strong>Generated:</strong> ${currentDate}</p>
+                            <p><strong>Total Records:</strong> {{ employees|length }}</p>
+                            <p><strong>Selected Fields:</strong> {{ total_selected_count }}</p>
+                        </div>
+                        <div class="table-responsive">${printContent.outerHTML}</div>
+                        <div class="mt-4 text-center text-muted">
+                            <small>Report generated by Employee Management System | Page 1 of 1</small>
+                        </div>
+                    </body>
+                </html>
+            `;
+            
+            window.print();
+            // Reload the original page
+            setTimeout(() => {
+                location.reload();
+            }, 100);
+        }
+
+        // Add smooth animations
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate stats items
+            const stats = document.querySelectorAll('.stat-item');
+            stats.forEach((stat, index) => {
+                setTimeout(() => {
+                    stat.style.opacity = '0';
+                    stat.style.transform = 'translateY(20px)';
+                    stat.style.transition = 'all 0.5s ease';
+                    setTimeout(() => {
+                        stat.style.opacity = '1';
+                        stat.style.transform = 'translateY(0)';
+                    }, 100);
+                }, index * 100);
+            });
+        });
+
+        // Handle export button clicks
+        document.addEventListener('DOMContentLoaded', function() {
+            const exportButtons = document.querySelectorAll('.btn-csv, .btn-excel');
+            exportButtons.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    if (!'{{ employees|length }}' || '{{ employees|length }}' === '0') {
+                        e.preventDefault();
+                        alert('No data available for export. Please select a department and fields first.');
+                    }
+                });
+            });
+        });
+
+        function gotodash(){
+            document.location.href = "{% url 'dashboard' %}";
+        }
+    </script>
+</body>
+</html>

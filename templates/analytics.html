@@ -1,0 +1,662 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employee Analytics Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+        --primary: #2c3e50;
+        --secondary: #3498db;
+        --accent: #9b59b6;
+        --success: #27ae60;
+        --warning: #f39c12;
+        --danger: #e74c3c;
+        --light: #ecf0f1;
+        --dark: #2c3e50;
+        --gray: #95a5a6;
+        --white: #ffffff;
+        --card-bg: #ffffff;
+        --body-bg: #f8f9fa;
+        --header-bg: rgba(255, 255, 255, 0.95);
+        --border: #e0e6ed;
+        --text: #2c3e50;
+        --text-light: #7f8c8d;
+        --shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+        --shadow-hover: 0 10px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background-color: var(--body-bg);
+        color: var(--text);
+        line-height: 1.6;
+        overflow-x: hidden;
+    }
+
+    /* Header Styles */
+    header {
+        background: var(--header-bg);
+        backdrop-filter: blur(10px);
+        box-shadow: var(--shadow);
+        position: fixed;
+        width: 100%;
+        top: 0;
+        z-index: 1000;
+        transition: all 0.3s ease;
+        border-bottom: 1px solid var(--border);
+    }
+
+    header.scrolled {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 6%;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .logo {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .logo i {
+        font-size: 1.8rem;
+        color: var(--secondary);
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .user-name {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-light);
+        font-weight: 500;
+    }
+
+    .user-name i {
+        color: var(--secondary);
+    }
+
+    .logout-btn {
+        background: var(--secondary);
+        color: var(--white);
+        padding: 0.7rem 1.8rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+
+    .logout-btn:hover {
+        background: var(--primary);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-hover);
+    }
+
+    /* Main Container */
+    .container {
+        max-width: 1400px;
+        margin: 90px auto 2rem;
+        padding: 0 6%;
+    }
+
+    /* Page Header */
+    .page-header {
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .page-header h1 {
+        font-size: 2.2rem;
+        color: var(--primary);
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        line-height: 1.2;
+    }
+
+    .page-header p {
+        color: var(--text-light);
+        font-size: 1.1rem;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .back-btn {
+        background: var(--white);
+        color: var(--secondary);
+        padding: 0.9rem 1.8rem;
+        border: 2px solid var(--secondary);
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+
+    .back-btn:hover {
+        background: var(--secondary);
+        color: var(--white);
+        transform: translateY(-2px);
+    }
+
+    /* Chart Cards */
+    .chart-card {
+        background: var(--card-bg);
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border: 1px solid var(--border);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .chart-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-hover);
+    }
+
+    .chart-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: var(--secondary);
+    }
+
+    .chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .chart-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .chart-title i {
+        color: var(--secondary);
+    }
+
+    .chart-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .chart-action-btn {
+        background: var(--light);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 0.5rem 0.8rem;
+        font-size: 0.85rem;
+        color: var(--text-light);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .chart-action-btn:hover {
+        background: var(--secondary);
+        color: var(--white);
+    }
+
+    canvas {
+        width: 100% !important;
+        height: 400px !important;
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .stat-card {
+        background: var(--card-bg);
+        padding: 2rem 1.5rem;
+        border-radius: 12px;
+        text-align: center;
+        color: var(--text);
+        box-shadow: var(--shadow);
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
+        border-left: 4px solid var(--secondary);
+    }
+
+    .stat-card:nth-child(2) {
+        border-left-color: var(--accent);
+    }
+
+    .stat-card:nth-child(3) {
+        border-left-color: var(--warning);
+    }
+
+    .stat-card:nth-child(4) {
+        border-left-color: var(--success);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(52, 152, 219, 0.05) 0%, rgba(155, 89, 182, 0.05) 100%);
+        z-index: 1;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-hover);
+    }
+
+    .stat-card i {
+        font-size: 2.8rem;
+        margin-bottom: 1rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .stat-card:nth-child(1) i {
+        color: var(--secondary);
+    }
+
+    .stat-card:nth-child(2) i {
+        color: var(--accent);
+    }
+
+    .stat-card:nth-child(3) i {
+        color: var(--warning);
+    }
+
+    .stat-card:nth-child(4) i {
+        color: var(--success);
+    }
+
+    .stat-card h3 {
+        font-size: 2.8rem;
+        margin-bottom: 0.5rem;
+        font-weight: 700;
+        position: relative;
+        z-index: 2;
+    }
+
+    .stat-card p {
+        font-size: 1rem;
+        color: var(--text-light);
+        position: relative;
+        z-index: 2;
+    }
+
+    /* Section Header */
+    .section-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .section-header h2 {
+        font-size: 2.2rem;
+        margin-bottom: 0.8rem;
+        color: var(--primary);
+        font-weight: 700;
+    }
+
+    .section-header p {
+        font-size: 1.1rem;
+        color: var(--text-light);
+        max-width: 650px;
+        margin: 0 auto;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .header-actions {
+            width: 100%;
+            justify-content: space-between;
+        }
+    }
+
+    a {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+    }
+
+    .logo-img {
+        width: 60px;
+        height: 50px;
+        object-fit: contain;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header id="header">
+      <nav>
+          <div class="logo" onclick="gotodash()">
+              <img src="{% static 'images/icon.png' %}" alt="Logo" class="logo-img">
+              <span>EmpManage</span>
+          </div>
+          <div class="user-info">
+              <a href="{% url 'logout' %}" class="logout-btn">
+                  <i class="fas fa-sign-out-alt"></i>
+                  Logout
+              </a>
+          </div>
+      </nav>
+  </header>
+
+  <div class="container py-4">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div>
+            <h1>Employee Analytics Dashboard</h1>
+            <p>Visual insights into employee distribution and statistics</p>
+        </div>
+        <div class="header-actions">
+            <a href="{% url 'dashboard' %}" class="back-btn">
+                <i class="fas fa-arrow-left"></i>
+                Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+      <!-- 1️⃣ Bar Chart -->
+      <div class="col-lg-12">
+        <div class="chart-card">
+          <div class="chart-header">
+            <h5 class="chart-title">
+                <i class="fas fa-chart-bar"></i>
+                Employees by Department
+            </h5>
+          </div>
+          <canvas id="departmentChart"></canvas>
+        </div>
+      </div>
+
+      <!-- 2️⃣ Teaching vs Non-Teaching -->
+      <div class="col-md-6">
+        <div class="chart-card">
+          <div class="chart-header">
+            <h5 class="chart-title">
+                <i class="fas fa-chart-pie"></i>
+                Teaching vs Non-Teaching
+            </h5>
+          </div>
+          <canvas id="categoryChart"></canvas>
+        </div>
+      </div>
+
+      <!-- 3️⃣ Permanent vs Temporary -->
+      <div class="col-md-6">
+        <div class="chart-card">
+          <div class="chart-header">
+            <h5 class="chart-title">
+                <i class="fas fa-chart-pie"></i>
+                Permanent vs Temporary
+            </h5>
+          </div>
+          <canvas id="typeChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 1️⃣ Employees by Department
+    const deptCtx = document.getElementById('departmentChart').getContext('2d');
+    new Chart(deptCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ department_labels|safe }},
+            datasets: [{
+                label: 'Number of Employees',
+                data: {{ department_counts|safe }},
+                backgroundColor: [
+                    'rgba(52, 152, 219, 0.7)',
+                    'rgba(155, 89, 182, 0.7)',
+                    'rgba(243, 156, 18, 0.7)',
+                    'rgba(39, 174, 96, 0.7)',
+                    'rgba(231, 76, 60, 0.7)',
+                    'rgba(22, 160, 133, 0.7)',
+                    'rgba(241, 196, 15, 0.7)',
+                    'rgba(44, 62, 80, 0.7)'
+                ],
+                borderColor: [
+                    'rgba(52, 152, 219, 1)',
+                    'rgba(155, 89, 182, 1)',
+                    'rgba(243, 156, 18, 1)',
+                    'rgba(39, 174, 96, 1)',
+                    'rgba(231, 76, 60, 1)',
+                    'rgba(22, 160, 133, 1)',
+                    'rgba(241, 196, 15, 1)',
+                    'rgba(44, 62, 80, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                title: { 
+                    display: true, 
+                    text: 'Employee Distribution by Department',
+                    font: {
+                        size: 16,
+                        weight: 'bold'
+                    },
+                    color: '#2c3e50'
+                }
+            },
+            scales: { 
+                y: { 
+                    beginAtZero: true,
+                    ticks: {
+                        font: {
+                            size: 12
+                        },
+                        color: '#7f8c8d'
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                },
+                x: {
+                    ticks: {
+                        font: {
+                            size: 12
+                        },
+                        color: '#7f8c8d'
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                }
+            }
+        }
+    });
+
+    // 2️⃣ Teaching vs Non-Teaching
+    const catCtx = document.getElementById('categoryChart').getContext('2d');
+    new Chart(catCtx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ category_labels|safe }},
+            datasets: [{
+                label: 'Staff Category',
+                data: {{ category_counts|safe }},
+                backgroundColor: ['rgba(52, 152, 219, 0.7)', 'rgba(155, 89, 182, 0.7)'],
+                borderColor: ['rgba(52, 152, 219, 1)', 'rgba(155, 89, 182, 1)'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: { 
+                    display: true, 
+                    text: 'Teaching vs Non-Teaching Staff',
+                    font: {
+                        size: 16,
+                        weight: 'bold'
+                    },
+                    color: '#2c3e50'
+                },
+                legend: { 
+                    position: 'bottom',
+                    labels: {
+                        font: {
+                            size: 12
+                        },
+                        color: '#7f8c8d'
+                    }
+                }
+            }
+        }
+    });
+
+    // 3️⃣ Permanent vs Temporary
+    const typeCtx = document.getElementById('typeChart').getContext('2d');
+    new Chart(typeCtx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ type_labels|safe }},
+            datasets: [{
+                label: 'Employment Type',
+                data: {{ type_counts|safe }},
+                backgroundColor: ['rgba(39, 174, 96, 0.7)', 'rgba(243, 156, 18, 0.7)'],
+                borderColor: ['rgba(39, 174, 96, 1)', 'rgba(243, 156, 18, 1)'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: { 
+                    display: true, 
+                    text: 'Permanent vs Temporary Employees',
+                    font: {
+                        size: 16,
+                        weight: 'bold'
+                    },
+                    color: '#2c3e50'
+                },
+                legend: { 
+                    position: 'bottom',
+                    labels: {
+                        font: {
+                            size: 12
+                        },
+                        color: '#7f8c8d'
+                    }
+                }
+            }
+        }
+    });
+
+    // Header scroll effect
+    window.addEventListener('scroll', function() {
+        const header = document.getElementById('header');
+        if (window.scrollY > 50) {
+            header.classList.add('scrolled');
+        } else {
+            header.classList.remove('scrolled');
+        }
+    });
+    
+    function gotodash(){
+        document.location.href = "{% url 'dashboard' %}";
+    }
+  </script>
+</body>
+</html>

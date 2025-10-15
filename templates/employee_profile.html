@@ -1,0 +1,1814 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Profile - EmpManage</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Include jsPDF library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Include pdf.js for PDF to image conversion -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            color: #1a1a1a;
+        }
+
+        /* Header Styles */
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        header.scrolled {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 6%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo i {
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .user-name {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #4b5563;
+            font-weight: 500;
+        }
+
+        .user-name i {
+            color: #667eea;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .pdf-btn {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            padding: 0.7rem 1.8rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .pdf-btn:hover {
+            background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+        }
+
+        .logout-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.7rem 1.8rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 90px auto 2rem;
+            padding: 0 6%;
+        }
+
+        /* Action Buttons */
+        .page-action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .back-btn {
+            background: white;
+            color: #667eea;
+            padding: 0.9rem 1.8rem;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .back-btn:hover {
+            background: #f0f9ff;
+            transform: translateY(-2px);
+        }
+
+        /* Profile Header */
+        .profile-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+            padding: 3rem;
+            margin-bottom: 2rem;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 2.5rem;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .profile-picture {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5rem;
+            color: white;
+        }
+
+        .profile-picture img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-info h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .profile-info .designation {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.9;
+        }
+
+        .profile-info .department {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            opacity: 0.8;
+        }
+
+        .employee-id {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        /* Profile Content */
+        .profile-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .profile-section {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .profile-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid #f0f9ff;
+        }
+
+        .section-header i {
+            font-size: 1.5rem;
+            color: #667eea;
+        }
+
+        .section-header h2 {
+            font-size: 1.4rem;
+            color: #1a1a1a;
+            font-weight: 600;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .info-item {
+            margin-bottom: 1.25rem;
+        }
+
+        .info-label {
+            font-size: 0.85rem;
+            color: #6b7280;
+            font-weight: 500;
+            margin-bottom: 0.4rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-value {
+            font-size: 1rem;
+            color: #1a1a1a;
+            font-weight: 500;
+        }
+
+        .badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-permanent {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-temporary {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-teaching {
+            background: #e6f7ff;
+            color: #1890ff;
+        }
+
+        .badge-non-teaching {
+            background: #f0f0f0;
+            color: #595959;
+        }
+
+        .badge-male {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge-female {
+            background: #fce7f3;
+            color: #be185d;
+        }
+
+        .badge-married {
+            background: #e6f7ff;
+            color: #1890ff;
+        }
+
+        .badge-single {
+            background: #f6ffed;
+            color: #52c41a;
+        }
+
+        .documents-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .document-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .document-item:hover {
+            background: #f0f9ff;
+            transform: translateX(5px);
+        }
+
+        .document-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .document-info {
+            flex: 1;
+        }
+
+        .document-name {
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 0.25rem;
+        }
+
+        .document-status {
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+
+        .document-action {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .document-action:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .document-action:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Full width sections */
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        /* Address Section */
+        .address-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .address-item {
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .address-type {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .address-text {
+            color: #1a1a1a;
+            line-height: 1.5;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .profile-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .address-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+                padding: 2rem;
+            }
+            
+            .profile-picture {
+                width: 150px;
+                height: 150px;
+                font-size: 3.5rem;
+            }
+            
+            .profile-info h1 {
+                font-size: 2rem;
+            }
+            
+            .page-action-buttons {
+                flex-direction: column;
+            }
+            
+            .header-actions {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .profile-section {
+                padding: 1.5rem;
+            }
+            
+            .section-header h2 {
+                font-size: 1.2rem;
+            }
+            
+            .header-actions {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .logo-img {
+            width: 60px;
+            height: 50px;
+            object-fit: contain;
+        }
+
+        /* Loading overlay for PDF conversion */
+        .pdf-loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .pdf-loading-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <!-- PDF Loading Overlay -->
+    <div class="pdf-loading-overlay" id="pdfLoadingOverlay">
+        <div class="pdf-loading-content">
+            <i class="fas fa-spinner fa-spin fa-2x"></i>
+            <p style="margin-top: 1rem;">Converting PDF certificates to images...</p>
+            <p id="pdfConversionStatus" style="font-size: 0.9rem; margin-top: 0.5rem;"></p>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header id="header">
+        <nav>
+            <div class="logo" onclick="gotodash()">
+                <img src="{% static 'images/icon.png' %}" alt="Logo" class="logo-img">
+                <span>EmpManage</span>
+            </div>
+            <div class="header-actions">
+                
+                <div class="action-buttons">
+                    <button class="pdf-btn" onclick="generatePDF()">
+                        <i class="fas fa-file-pdf"></i>
+                        Export to PDF
+                    </button>
+                    <button class="logout-btn" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <div class="page-action-buttons">
+            <button class="back-btn" onclick="goBack()">
+                <i class="fas fa-arrow-left"></i>
+                Back 
+            </button>
+        </div>
+
+        <!-- Profile Header -->
+        <div class="profile-header">
+            <div class="profile-picture">
+                {% if employee.get_photo_url %}
+                    <img src="{{ employee.get_photo_url }}" alt="{{ employee.first_name }} {{ employee.last_name }}" id="profile-image" />
+                {% else %}
+                    <i class="fas fa-user"></i>
+                {% endif %}
+            </div>
+            <div class="profile-info">
+                <h1 id="profile-name">{{ employee.first_name }} {{ employee.last_name }}</h1>
+                <div class="designation" id="profile-designation">{{ employee.designation }}</div>
+                <div class="department" id="profile-department">{{ employee.department }}</div>
+                <div class="employee-id" id="profile-id">{{ employee.employee_id }}</div>
+            </div>
+        </div>
+
+        <!-- Profile Content -->
+        <div class="profile-content">
+            <!-- Basic Information -->
+            <div class="profile-section">
+                <div class="section-header">
+                    <i class="fas fa-user-circle"></i>
+                    <h2>Basic Information</h2>
+                </div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Employee ID</div>
+                        <div class="info-value" id="basic-id">{{ employee.employee_id }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Employee Name</div>
+                        <div class="info-value" id="basic-name">{{ employee.first_name }} </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Employee Lastname</div>
+                        <div class="info-value" id="basic-surname">{{ employee.last_name }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Short Name</div>
+                        <div class="info-value" id="basic-shortname">{{ employee.short_name }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Employee Type</div>
+                        <div class="info-value">
+                            <span class="badge badge-permanent" id="basic-type">{{ employee.employee_type }}</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Category</div>
+                        <div class="info-value">
+                            <span class="badge badge-teaching" id="basic-category">{{ employee.category }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Professional Details -->
+            <div class="profile-section">
+                <div class="section-header">
+                    <i class="fas fa-briefcase"></i>
+                    <h2>Professional Details</h2>
+                </div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Department</div>
+                        <div class="info-value" id="prof-dept">{{ employee.department }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Designation</div>
+                        <div class="info-value" id="prof-designation">{{ employee.designation }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Qualification</div>
+                        <div class="info-value" id="prof-qualification">{{ employee.qualifications }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Present Working As</div>
+                        <div class="info-value" id="prof-workingas">{{ professional.present_working_as }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Date of Join</div>
+                        <div class="info-value" id="prof-joindate">{{ professional.date_of_join }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Date of Exit</div>
+                        <div class="info-value" id="prof-exitdate">{{ professional.date_of_exit|default:"Still Working" }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Previous Experience</div>
+                        <div class="info-value" id="prof-experience">{{ professional.previous_experience_years }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Personal Details -->
+            <div class="profile-section">
+                <div class="section-header">
+                    <i class="fas fa-user"></i>
+                    <h2>Personal Details</h2>
+                </div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Gender</div>
+                        <div class="info-value">
+                            <span class="badge badge-male" id="personal-gender">{{ personal.gender }}</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Blood Group</div>
+                        <div class="info-value" id="personal-blood">{{ personal.blood_group }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Date of Birth</div>
+                        <div class="info-value" id="personal-dob">{{ personal.date_of_birth }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Marital Status</div>
+                        <div class="info-value">
+                            <span class="badge badge-married" id="personal-marital">{{ personal.marital_status }}</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Father Name</div>
+                        <div class="info-value" id="personal-father">{{ personal.father_name }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Mother Name</div>
+                        <div class="info-value" id="personal-mother">{{ personal.mother_name }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Details -->
+            <div class="profile-section">
+                <div class="section-header">
+                    <i class="fas fa-address-book"></i>
+                    <h2>Contact Details</h2>
+                </div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Mobile Number</div>
+                        <div class="info-value" id="contact-mobile">{{ contact.mobile_number }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Alternate Mobile Number</div>
+                        <div class="info-value" id="contact-mobile">{{ contact.alternate_mobile_number }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Email Address</div>
+                        <div class="info-value" id="contact-email">{{ contact.email }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Address Details -->
+            <div class="profile-section full-width">
+                <div class="section-header">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <h2>Address Details</h2>
+                </div>
+                <div class="address-section">
+                    <div class="address-item">
+                        <div class="address-type">Permanent Address</div>
+                        <div class="address-text" id="address-permanent">{{ contact.permanent_address }}</div>
+                    </div>
+                    <div class="address-item ">
+                        <div class="address-type">Contact Address</div>
+                        <div class="address-text" id="address-contact">{{ contact.contact_address }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Documents & Attachments -->
+            <div class="profile-section full-width">
+                <div class="section-header">
+                    <i class="fas fa-file-alt"></i>
+                    <h2>Documents & Attachments</h2>
+                </div>
+                <div class="documents-list">
+                    <!-- Bank Passbook -->
+                    <div class="document-item">
+                        <div class="document-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="document-info">
+                            <div class="document-name">Bank Passbook</div>
+                            <div class="document-status" id="doc-bank-passbook">{{ bank.account_number }}</div>
+                        </div>
+                        {% if bank.get_bank_passbook_url %}
+                            <a href="{{ bank.get_bank_passbook_url }}" target="_blank" class="certificate-link" data-certificate-name="Bank Passbook">
+                                <button class="document-action">View</button>
+                            </a>
+                        {% else %}
+                            <button class="document-action" disabled>Not Available</button>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Aadhar Card -->
+                    <div class="document-item">
+                        <div class="document-icon">
+                            <i class="fas fa-id-card"></i>
+                        </div>
+                        <div class="document-info">
+                            <div class="document-name">Aadhar Card</div>
+                            <div class="document-status" id="doc-aadhar">{{ documents.aadhar_number }}</div>
+                        </div>
+                        {% if documents.get_aadhar_url %}
+                            <a href="{{ documents.get_aadhar_url }}" target="_blank" class="certificate-link" data-certificate-name="Aadhar Card">
+                                <button class="document-action">View</button>
+                            </a>
+                        {% else %}
+                            <button class="document-action" disabled>Not Available</button>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- PAN Card -->
+                    <div class="document-item">
+                        <div class="document-icon">
+                            <i class="fas fa-credit-card"></i>
+                        </div>
+                        <div class="document-info">
+                            <div class="document-name">PAN Card</div>
+                            <div class="document-status" id="doc-pan">{{ documents.pan_number }}</div>
+                        </div>
+                        {% if documents.get_pan_url %}
+                            <a href="{{ documents.get_pan_url }}" target="_blank" class="certificate-link" data-certificate-name="PAN Card">
+                                <button class="document-action">View</button>
+                            </a>
+                        {% else %}
+                            <button class="document-action" disabled>Not Available</button>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Joining Letter -->
+                    <div class="document-item">
+                        <div class="document-icon">
+                            <i class="fas fa-file-contract"></i>
+                        </div>
+                        <div class="document-info">
+                            <div class="document-name">Joining Letter</div>
+                            <div class="document-status">Uploaded: {{ employee.created_at }}</div>
+                        </div>
+                        {% if documents.get_joining_letter_url %}
+                            <a href="{{ documents.get_joining_letter_url }}" target="_blank" class="certificate-link" data-certificate-name="Joining Letter">
+                                <button class="document-action">View</button>
+                            </a>
+                        {% else %}
+                            <button class="document-action" disabled>Not Available</button>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Experience Certificate -->
+                    <div class="document-item">
+                        <div class="document-icon">
+                            <i class="fas fa-certificate"></i>
+                        </div>
+                        <div class="document-info">
+                            <div class="document-name">Experience Certificate</div>
+                            <div class="document-status">Uploaded: {{ employee.created_at }}</div>
+                        </div>
+                        {% if professional.get_experience_certificate_url %}
+                            <a href="{{ professional.get_experience_certificate_url }}" target="_blank" class="certificate-link" data-certificate-name="Experience Certificate">
+                                <button class="document-action">View</button>
+                            </a>
+                        {% else %}
+                            <button class="document-action" disabled>Not Available</button>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- 10th Certificate -->
+                    <div class="document-item">
+                        <div class="document-icon">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <div class="document-info">
+                            <div class="document-name">10th Certificate</div>
+                            <div class="document-status">Uploaded: {{ employee.created_at }}</div>
+                        </div>
+                        {% if documents.get_tenth_certificate_url %}
+                            <a href="{{ documents.get_tenth_certificate_url }}" target="_blank" class="certificate-link" data-certificate-name="10th Certificate">
+                                <button class="document-action">View</button>
+                            </a>
+                        {% else %}
+                            <button class="document-action" disabled>Not Available</button>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- PUC Certificate -->
+                    {% if documents.puc_certificate %}
+                    <div class="document-item">
+                        <div class="document-icon">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <div class="document-info">
+                            <div class="document-name">PUC Certificate</div>
+                            <div class="document-status">Uploaded: {{ employee.created_at }}</div>
+                        </div>
+                        {% if documents.get_puc_certificate_url %}
+                            <a href="{{ documents.get_puc_certificate_url }}" target="_blank" class="certificate-link" data-certificate-name="PUC Certificate">
+                                <button class="document-action">View</button>
+                            </a>
+                        {% else %}
+                            <button class="document-action" disabled>Not Available</button>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Degree Certificate -->
+                    {% if documents.degree_certificate %}
+                    <div class="document-item">
+                        <div class="document-icon">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <div class="document-info">
+                            <div class="document-name">Degree Certificate</div>
+                            <div class="document-status">Uploaded: {{ employee.created_at }}</div>
+                        </div>
+                        {% if documents.get_degree_certificate_url %}
+                            <a href="{{ documents.get_degree_certificate_url }}" target="_blank" class="certificate-link" data-certificate-name="Degree Certificate">
+                                <button class="document-action">View</button>
+                            </a>
+                        {% else %}
+                            <button class="document-action" disabled>Not Available</button>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- PG Certificate -->
+                    {% if documents.pg_certificate %}
+                    <div class="document-item">
+                        <div class="document-icon">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <div class="document-info">
+                            <div class="document-name">PG Certificate</div>
+                            <div class="document-status">Uploaded: {{ employee.created_at }}</div>
+                        </div>
+                        {% if documents.get_pg_certificate_url %}
+                            <a href="{{ documents.get_pg_certificate_url }}" target="_blank" class="certificate-link" data-certificate-name="PG Certificate">
+                                <button class="document-action">View</button>
+                            </a>
+                        {% else %}
+                            <button class="document-action" disabled>Not Available</button>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- PhD Certificate -->
+                    {% if documents.phd_certificate %}
+                    <div class="document-item">
+                        <div class="document-icon">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <div class="document-info">
+                            <div class="document-name">PhD Certificate</div>
+                            <div class="document-status">Uploaded: {{ employee.created_at }}</div>
+                        </div>
+                        {% if documents.get_phd_certificate_url %}
+                            <a href="{{ documents.get_phd_certificate_url }}" target="_blank" class="certificate-link" data-certificate-name="PhD Certificate">
+                                <button class="document-action">View</button>
+                            </a>
+                        {% else %}
+                            <button class="document-action" disabled>Not Available</button>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Bank & Statutory Details -->
+            <div class="profile-section full-width">
+                <div class="section-header">
+                    <i class="fas fa-university"></i>
+                    <h2>Bank & Statutory Details</h2>
+                </div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Bank Name</div>
+                        <div class="info-value" id="bank-name">{{ bank.bank_name }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Branch Name</div>
+                        <div class="info-value" id="bank-branch">{{ bank.branch_name }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Account Number</div>
+                        <div class="info-value" id="bank-account">{{ bank.account_number }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">IFSC Code</div>
+                        <div class="info-value" id="bank-ifsc">{{ bank.ifsc_code }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">PF Account Number</div>
+                        <div class="info-value" id="bank-pf">{{ bank.pf_account_number|default:"N/A" }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">ESI Number</div>
+                        <div class="info-value" id="bank-esi">{{ bank.esi_number|default:"N/A" }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">UAN Number</div>
+                        <div class="info-value" id="bank-uan">{{ bank.uan_number|default:"N/A" }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // Initialize the profile page
+    document.addEventListener('DOMContentLoaded', function() {
+        // Header scroll effect
+        window.addEventListener('scroll', function() {
+            const header = document.getElementById('header');
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // Configure pdf.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+    });
+
+    // Show PDF conversion loading overlay
+    function showPDFLoadingOverlay(message = '') {
+        const overlay = document.getElementById('pdfLoadingOverlay');
+        const status = document.getElementById('pdfConversionStatus');
+        if (message) {
+            status.textContent = message;
+        }
+        overlay.style.display = 'flex';
+    }
+
+    // Hide PDF conversion loading overlay
+    function hidePDFLoadingOverlay() {
+        const overlay = document.getElementById('pdfLoadingOverlay');
+        overlay.style.display = 'none';
+    }
+
+    // Go back to dashboard
+    function goBack() {
+        window.close();
+    }
+
+    // Logout function
+    function logout() {
+        document.location.href = "{% url 'logout' %}";
+    }
+
+    // Generate PDF function with proper structure
+    async function generatePDF() {
+        // Show loading state
+        const pdfBtn = document.querySelector('.pdf-btn');
+        const originalText = pdfBtn.innerHTML;
+        pdfBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating PDF...';
+        pdfBtn.disabled = true;
+
+        try {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const employeeName = document.getElementById('profile-name').textContent;
+            const employeeId = document.getElementById('profile-id').textContent;
+            
+            console.log('Starting PDF generation...');
+            
+            // Show loading overlay for PDF conversion
+            showPDFLoadingOverlay('Preparing certificates...');
+            
+            // Add first 2 pages with employee details only
+            await addEmployeeDetailsPages(pdf, employeeName, employeeId);
+            
+            console.log('Employee details pages added successfully');
+            
+            // Add certificate pages (one certificate per page) starting from page 3
+            await addCertificatePages(pdf, employeeName, employeeId);
+            
+            console.log('Certificate pages added successfully');
+            
+            // Hide loading overlay
+            hidePDFLoadingOverlay();
+            
+            // Show preview option
+            showPDFPreview(pdf, employeeName, employeeId);
+            
+        } catch (error) {
+            console.error('Error generating PDF:', error);
+            hidePDFLoadingOverlay();
+            alert('Error generating PDF. Please try again. Error: ' + error.message);
+        } finally {
+            // Restore button state
+            pdfBtn.innerHTML = originalText;
+            pdfBtn.disabled = false;
+        }
+    }
+
+    // Helper function to validate and process URLs
+    function getValidUrl(url) {
+        if (!url || url === 'None' || url.includes('undefined') || url.trim() === '' || url.includes('default="')) {
+            return null;
+        }
+        
+        // Clean the URL - remove any Django template artifacts
+        let cleanUrl = url.replace(/&quot;/g, '').trim();
+        
+        // Ensure absolute URL for external access
+        if (cleanUrl.startsWith('/')) {
+            // Use current origin to create absolute URL
+            cleanUrl = window.location.origin + cleanUrl;
+        }
+        
+        return cleanUrl;
+    }
+
+    // Check if URL points to a PDF file
+    function isPDFUrl(url) {
+        if (!url) return false;
+        const lowerUrl = url.toLowerCase();
+        return lowerUrl.endsWith('.pdf') || lowerUrl.includes('.pdf?') || lowerUrl.includes('/pdf/');
+    }
+
+    // Convert PDF to image
+    async function convertPDFToImage(pdfUrl, certName) {
+        try {
+            console.log(`Converting PDF to image: ${certName}`);
+            showPDFLoadingOverlay(`Converting ${certName}...`);
+            
+            // Load the PDF document
+            const loadingTask = pdfjsLib.getDocument(pdfUrl);
+            const pdf = await loadingTask.promise;
+            
+            const images = [];
+            
+            // Convert each page to an image
+            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                showPDFLoadingOverlay(`Converting ${certName} (page ${pageNum}/${pdf.numPages})...`);
+                
+                const page = await pdf.getPage(pageNum);
+                const viewport = page.getViewport({ scale: 2.0 }); // Higher scale for better quality
+                
+                // Create canvas for rendering
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                
+                // Render PDF page to canvas
+                const renderContext = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+                
+                await page.render(renderContext).promise;
+                
+                // Convert canvas to data URL
+                const imageData = canvas.toDataURL('image/jpeg', 0.8);
+                images.push(imageData);
+                
+                console.log(`✓ Converted page ${pageNum} of ${certName}`);
+            }
+            
+            console.log(`✓ Successfully converted ${pdf.numPages} pages of ${certName} to images`);
+            return images;
+            
+        } catch (error) {
+            console.error(`Error converting PDF ${certName} to image:`, error);
+            throw new Error(`Failed to convert PDF to image: ${error.message}`);
+        }
+    }
+
+    // Add first 2 pages with employee details only - COMPLETELY FIXED VERSION
+    async function addEmployeeDetailsPages(pdf, employeeName, employeeId) {
+        // PAGE 1: Basic and Professional Information
+        // Add header
+        pdf.setFillColor(102, 126, 234);
+        pdf.rect(0, 0, 210, 40, 'F');
+        
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFontSize(18);
+        pdf.text('EMPLOYEE PROFILE', 105, 15, { align: 'center' });
+        
+        pdf.setFontSize(12);
+        pdf.text(`${employeeName} - ${employeeId}`, 105, 25, { align: 'center' });
+        
+        pdf.setTextColor(100, 100, 100);
+        pdf.setFontSize(10);
+        pdf.text('EmpManage System', 105, 35, { align: 'center' });
+        
+        pdf.setTextColor(0, 0, 0);
+        
+        // Add profile picture
+        const profilePicContainer = document.querySelector('.profile-picture');
+        let yPosition = 50;
+        
+        if (profilePicContainer) {
+            try {
+                const canvas = await html2canvas(profilePicContainer, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: null
+                });
+                
+                const imgData = canvas.toDataURL('image/jpeg', 0.8);
+                const imgProps = pdf.getImageProperties(imgData);
+                
+                // Calculate dimensions to fit
+                const maxWidth = 50;
+                const maxHeight = 50;
+                const ratio = Math.min(maxWidth / imgProps.width, maxHeight / imgProps.height);
+                const imgWidth = imgProps.width * ratio;
+                const imgHeight = imgProps.height * ratio;
+                
+                pdf.addImage(imgData, 'JPEG', 140, yPosition, imgWidth, imgHeight);
+                
+            } catch (error) {
+                console.log('Could not add profile picture:', error);
+                // Add placeholder
+                pdf.setFillColor(240, 240, 240);
+                pdf.rect(140, yPosition, 50, 50, 'F');
+                pdf.setTextColor(150, 150, 150);
+                pdf.text('No Photo', 165, yPosition + 25, { align: 'center' });
+                pdf.setTextColor(0, 0, 0);
+            }
+        }
+        
+        // Basic Information
+        pdf.setFontSize(14);
+        pdf.setFont(undefined, 'bold');
+        pdf.text('BASIC INFORMATION', 20, yPosition);
+        pdf.setFont(undefined, 'normal');
+        yPosition += 10;
+        
+        const basicInfo = [
+            `Employee ID: ${employeeId}`,
+            `Name: ${employeeName}`,
+            `Designation: ${document.getElementById('profile-designation').textContent}`,
+            `Department: ${document.getElementById('profile-department').textContent}`,
+            `Employee Type: ${document.getElementById('basic-type').textContent}`,
+            `Category: ${document.getElementById('basic-category').textContent}`,
+            `Short Name: ${document.getElementById('basic-shortname').textContent}`
+        ];
+        
+        basicInfo.forEach(info => {
+            pdf.text(info, 20, yPosition);
+            yPosition += 7;
+        });
+        
+        // Professional Details
+        yPosition += 5;
+        pdf.setFont(undefined, 'bold');
+        pdf.text('PROFESSIONAL DETAILS', 20, yPosition);
+        pdf.setFont(undefined, 'normal');
+        yPosition += 10;
+        
+        const professionalInfo = [
+            `Qualification: ${document.getElementById('prof-qualification').textContent}`,
+            `Present Role: ${document.getElementById('prof-workingas').textContent || 'N/A'}`,
+            `Date of Join: ${document.getElementById('prof-joindate').textContent}`,
+            `Date of Exit: ${document.getElementById('prof-exitdate').textContent}`,
+            `Previous Experience: ${document.getElementById('prof-experience').textContent || '0'} years`
+        ];
+        
+        professionalInfo.forEach(info => {
+            pdf.text(info, 20, yPosition);
+            yPosition += 7;
+        });
+
+        // PAGE 2: Personal, Contact, Address, and Bank Details
+        pdf.addPage();
+        
+        // Add header
+        pdf.setFillColor(70, 130, 180);
+        pdf.rect(0, 0, 210, 30, 'F');
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFontSize(16);
+        pdf.text('EMPLOYEE DETAILS - PAGE 2', 105, 20, { align: 'center' });
+        pdf.setTextColor(0, 0, 0);
+        
+        yPosition = 40;
+        
+        // Personal Details
+        pdf.setFont(undefined, 'bold');
+        pdf.text('PERSONAL DETAILS', 20, yPosition);
+        pdf.setFont(undefined, 'normal');
+        yPosition += 10;
+        
+        const personalInfo = [
+            `Gender: ${document.getElementById('personal-gender').textContent}`,
+            `Blood Group: ${document.getElementById('personal-blood').textContent}`,
+            `Date of Birth: ${document.getElementById('personal-dob').textContent}`,
+            `Marital Status: ${document.getElementById('personal-marital').textContent}`,
+            `Father Name: ${document.getElementById('personal-father').textContent}`,
+            `Mother Name: ${document.getElementById('personal-mother').textContent}`
+        ];
+        
+        personalInfo.forEach(info => {
+            pdf.text(info, 20, yPosition);
+            yPosition += 7;
+        });
+        
+        // Contact Details
+        yPosition += 5;
+        pdf.setFont(undefined, 'bold');
+        pdf.text('CONTACT DETAILS', 20, yPosition);
+        pdf.setFont(undefined, 'normal');
+        yPosition += 10;
+        
+        const contactInfo = [
+            `Mobile: ${document.getElementById('contact-mobile').textContent}`,
+            `Email: ${document.getElementById('contact-email').textContent}`
+        ];
+        
+        contactInfo.forEach(info => {
+            pdf.text(info, 20, yPosition);
+            yPosition += 7;
+        });
+        
+        // Address Details
+        yPosition += 5;
+        pdf.setFont(undefined, 'bold');
+        pdf.text('ADDRESS DETAILS', 20, yPosition);
+        pdf.setFont(undefined, 'normal');
+        yPosition += 10;
+        
+        const permanentAddress = document.getElementById('address-permanent').textContent;
+        const contactAddress = document.getElementById('address-contact').textContent;
+        
+        pdf.text('Permanent Address:', 20, yPosition);
+        yPosition += 5;
+        
+        // Split long address into multiple lines
+        const permanentLines = pdf.splitTextToSize(permanentAddress, 160);
+        permanentLines.forEach(line => {
+            pdf.text(line, 25, yPosition);
+            yPosition += 5;
+        });
+        
+        yPosition += 5;
+        pdf.text('Contact Address:', 20, yPosition);
+        yPosition += 5;
+        
+        // Split long address into multiple lines
+        const contactLines = pdf.splitTextToSize(contactAddress, 160);
+        contactLines.forEach(line => {
+            pdf.text(line, 25, yPosition);
+            yPosition += 5;
+        });
+        
+        // Bank Details
+        yPosition += 10;
+        pdf.setFont(undefined, 'bold');
+        pdf.text('BANK & STATUTORY DETAILS', 20, yPosition);
+        pdf.setFont(undefined, 'normal');
+        yPosition += 10;
+        
+        const bankInfo = [
+            `Bank Name: ${document.getElementById('bank-name').textContent}`,
+            `Branch: ${document.getElementById('bank-branch').textContent}`,
+            `Account Number: ${document.getElementById('bank-account').textContent}`,
+            `IFSC Code: ${document.getElementById('bank-ifsc').textContent}`,
+            `PF Account: ${document.getElementById('bank-pf').textContent}`,
+            `ESI Number: ${document.getElementById('bank-esi').textContent}`,
+            `UAN Number: ${document.getElementById('bank-uan').textContent}`
+        ];
+        
+        bankInfo.forEach(info => {
+            pdf.text(info, 20, yPosition);
+            yPosition += 7;
+        });
+    }
+
+    // Add certificate pages - ONE CERTIFICATE PER PAGE starting from page 3
+    async function addCertificatePages(pdf, employeeName, employeeId) {
+        // Define all certificates with their URLs
+        const certificates = [
+            {
+                name: 'Bank Passbook',
+                url: getValidUrl('{{ bank.get_bank_passbook_url|default:"" }}')
+            },
+            {
+                name: 'Aadhar Card',
+                url: getValidUrl('{{ documents.get_aadhar_url|default:"" }}')
+            },
+            {
+                name: 'PAN Card',
+                url: getValidUrl('{{ documents.get_pan_url|default:"" }}')
+            },
+            {
+                name: 'Joining Letter',
+                url: getValidUrl('{{ documents.get_joining_letter_url|default:"" }}')
+            },
+            {
+                name: 'Experience Certificate',
+                url: getValidUrl('{{ professional.get_experience_certificate_url|default:"" }}')
+            },
+            {
+                name: '10th Certificate',
+                url: getValidUrl('{{ documents.get_tenth_certificate_url|default:"" }}')
+            },
+            {
+                name: 'PUC Certificate',
+                url: getValidUrl('{{ documents.get_puc_certificate_url|default:"" }}')
+            },
+            {
+                name: 'Degree Certificate',
+                url: getValidUrl('{{ documents.get_degree_certificate_url|default:"" }}')
+            },
+            {
+                name: 'PG Certificate',
+                url: getValidUrl('{{ documents.get_pg_certificate_url|default:"" }}')
+            },
+            {
+                name: 'PhD Certificate',
+                url: getValidUrl('{{ documents.get_phd_certificate_url|default:"" }}')
+            }
+        ];
+
+        console.log('Processing certificates:', certificates);
+
+        // Process each certificate
+        for (const cert of certificates) {
+            await processCertificate(pdf, cert, employeeName, employeeId);
+        }
+    }
+
+    // Process individual certificate
+    async function processCertificate(pdf, cert, employeeName, employeeId) {
+        if (!cert.url) {
+            console.log(`Certificate ${cert.name} not available`);
+            if (isMandatoryCertificate(cert.name)) {
+                pdf.addPage();
+                addCertificateNotFound(pdf, cert.name, employeeName, employeeId);
+            }
+            return;
+        }
+
+        try {
+            console.log(`Loading certificate: ${cert.name} from URL: ${cert.url}`);
+
+            // Check if it's a PDF file
+            if (isPDFUrl(cert.url)) {
+                // Convert PDF to images and add to PDF
+                const pdfImages = await convertPDFToImage(cert.url, cert.name);
+                
+                if (pdfImages && pdfImages.length > 0) {
+                    // Add each PDF page as a separate image in the PDF
+                    for (let i = 0; i < pdfImages.length; i++) {
+                        // Add new page for each PDF page
+                        pdf.addPage();
+                        
+                        // Certificate header
+                        pdf.setFillColor(70, 130, 180);
+                        pdf.rect(0, 0, 210, 30, 'F');
+                        pdf.setTextColor(255, 255, 255);
+                        pdf.setFontSize(16);
+                        const pageText = pdfImages.length > 1 ? `${cert.name.toUpperCase()} - PAGE ${i + 1}` : cert.name.toUpperCase();
+                        pdf.text(pageText, 105, 20, { align: 'center' });
+                        pdf.setTextColor(0, 0, 0);
+                        
+                        // Add the converted PDF page as image
+                        await addImageToPDFPage(pdf, pdfImages[i], `${cert.name} - Page ${i + 1}`);
+                    }
+                    
+                    console.log(`✓ Successfully added ${pdfImages.length} pages of ${cert.name} to PDF`);
+                } else {
+                    throw new Error('No images generated from PDF');
+                }
+            } else {
+                // Handle image files
+                // Add new page for this certificate
+                pdf.addPage();
+                
+                // Certificate header
+                pdf.setFillColor(70, 130, 180);
+                pdf.rect(0, 0, 210, 30, 'F');
+                pdf.setTextColor(255, 255, 255);
+                pdf.setFontSize(16);
+                pdf.text(cert.name.toUpperCase(), 105, 20, { align: 'center' });
+                pdf.setTextColor(0, 0, 0);
+
+                const imgData = await loadCertificateImageWithFallbacks(cert.url);
+                
+                if (imgData) {
+                    await addImageToPDFPage(pdf, imgData, cert.name);
+                    console.log(`✓ Successfully added ${cert.name} to PDF`);
+                } else {
+                    throw new Error('Could not load certificate image after all attempts');
+                }
+            }
+            
+        } catch (error) {
+            console.error(`Error processing ${cert.name}:`, error);
+            // Add error page
+            pdf.addPage();
+            addCertificateErrorPage(pdf, cert.name, employeeName, employeeId, error.message);
+        }
+        
+        // Add footer info to every certificate page
+        addCertificateFooter(pdf, employeeName, employeeId);
+    }
+
+    // Enhanced image loading with multiple fallbacks
+    async function loadCertificateImageWithFallbacks(url) {
+        try {
+            // Method 1: Direct image loading with CORS
+            return await loadImageAsDataURL(url);
+        } catch (error) {
+            console.log('Method 1 failed, trying fetch API...', error);
+            
+            // Method 2: Using fetch API with credentials
+            try {
+                return await loadImageWithFetch(url);
+            } catch (fetchError) {
+                console.log('Method 2 failed, trying blob URL...', fetchError);
+                
+                // Method 3: Create blob URL
+                try {
+                    return await loadImageAsBlobURL(url);
+                } catch (blobError) {
+                    console.log('All image loading methods failed', blobError);
+                    return null;
+                }
+            }
+        }
+    }
+
+    // Method 1: Direct image loading (existing but improved)
+    function loadImageAsDataURL(url) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.crossOrigin = 'Anonymous';
+            
+            img.onload = function() {
+                try {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+                    const dataURL = canvas.toDataURL('image/jpeg', 0.8);
+                    resolve(dataURL);
+                } catch (error) {
+                    reject(error);
+                }
+            };
+            
+            img.onerror = function() {
+                reject(new Error('Failed to load image'));
+            };
+            
+            // Add timestamp to avoid cache issues
+            const timestamp = new Date().getTime();
+            const separator = url.includes('?') ? '&' : '?';
+            img.src = url + separator + 't=' + timestamp;
+            
+            // Timeout after 10 seconds
+            setTimeout(() => {
+                if (!img.complete) {
+                    reject(new Error('Image loading timeout'));
+                }
+            }, 10000);
+        });
+    }
+
+    // Method 2: Fetch API approach
+    async function loadImageWithFetch(url) {
+        try {
+            const response = await fetch(url, {
+                method: 'GET',
+                credentials: 'include', // Include cookies for authentication
+                mode: 'cors'
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const blob = await response.blob();
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => reject(new Error('FileReader error'));
+                reader.readAsDataURL(blob);
+            });
+        } catch (error) {
+            throw new Error(`Fetch failed: ${error.message}`);
+        }
+    }
+
+    // Method 3: Blob URL approach
+    async function loadImageAsBlobURL(url) {
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.responseType = 'blob';
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    const blob = xhr.response;
+                    const blobUrl = URL.createObjectURL(blob);
+                    resolve(blobUrl);
+                } else {
+                    reject(new Error(`XHR failed with status: ${xhr.status}`));
+                }
+            };
+            xhr.onerror = function() {
+                reject(new Error('XHR network error'));
+            };
+            xhr.open('GET', url);
+            xhr.send();
+        });
+    }
+
+    // Fixed image addition to PDF - REMOVED THE PROBLEMATIC TEXT
+    async function addImageToPDFPage(pdf, imgData, certName) {
+        try {
+            const imgProps = pdf.getImageProperties(imgData);
+            
+            // Calculate dimensions to fit page
+            const pageWidth = 210;
+            const pageHeight = 297;
+            const margin = 15;
+            const maxWidth = pageWidth - (2 * margin);
+            const maxHeight = pageHeight - 60; // Leave space for header and footer
+            
+            const ratio = Math.min(maxWidth / imgProps.width, maxHeight / imgProps.height);
+            const imgWidth = imgProps.width * ratio;
+            const imgHeight = imgProps.height * ratio;
+            
+            const xPos = (pageWidth - imgWidth) / 2;
+            const yPos = 40;
+            
+            // Add image to PDF
+            pdf.addImage(imgData, 'JPEG', xPos, yPos, imgWidth, imgHeight);
+            
+            // No text added - clean certificate page
+            
+        } catch (error) {
+            console.error('Error adding image to PDF:', error);
+            throw new Error('Failed to add image to PDF page');
+        }
+    }
+
+    // Add certificate footer
+    function addCertificateFooter(pdf, employeeName, employeeId) {
+        pdf.setFontSize(10);
+        pdf.setTextColor(100, 100, 100);
+        pdf.text(`Employee: ${employeeName} (${employeeId})`, 20, 285);
+        pdf.text(`Generated: ${new Date().toLocaleDateString()}`, 20, 290);
+        pdf.setTextColor(0, 0, 0);
+    }
+
+    // Helper function to check if certificate is mandatory
+    function isMandatoryCertificate(certName) {
+        const mandatoryCertificates = [
+            'Bank Passbook',
+            'Aadhar Card', 
+            'PAN Card',
+            'Joining Letter',
+            'Experience Certificate',
+            '10th Certificate'
+        ];
+        return mandatoryCertificates.includes(certName);
+    }
+
+    // Helper function for certificate not found
+    function addCertificateNotFound(pdf, certName, employeeName, employeeId) {
+        // Certificate header
+        pdf.setFillColor(120, 120, 120);
+        pdf.rect(0, 0, 210, 30, 'F');
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFontSize(16);
+        pdf.text(certName.toUpperCase(), 105, 20, { align: 'center' });
+        pdf.setTextColor(0, 0, 0);
+        
+        // Center content
+        pdf.setFontSize(14);
+        pdf.setTextColor(255, 0, 0);
+        pdf.text('DOCUMENT NOT AVAILABLE', 105, 120, { align: 'center' });
+        
+        pdf.setFontSize(12);
+        pdf.setTextColor(100, 100, 100);
+        pdf.text(`The ${certName} has not been uploaded yet.`, 105, 140, { align: 'center' });
+        pdf.text('Please contact the administrator for assistance.', 105, 155, { align: 'center' });
+        
+        // Add footer info
+        addCertificateFooter(pdf, employeeName, employeeId);
+    }
+
+    // Helper function for certificate error
+    function addCertificateErrorPage(pdf, certName, employeeName, employeeId, errorMessage) {
+        // Certificate header
+        pdf.setFillColor(200, 0, 0);
+        pdf.rect(0, 0, 210, 30, 'F');
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFontSize(16);
+        pdf.text(certName.toUpperCase(), 105, 20, { align: 'center' });
+        pdf.setTextColor(0, 0, 0);
+        
+        // Error message
+        pdf.setFontSize(14);
+        pdf.setTextColor(200, 0, 0);
+        pdf.text('ERROR LOADING CERTIFICATE', 105, 80, { align: 'center' });
+        
+        pdf.setFontSize(12);
+        pdf.setTextColor(100, 100, 100);
+        pdf.text(`Could not load ${certName}:`, 20, 110);
+        pdf.text(errorMessage, 20, 125, { maxWidth: 170 });
+        pdf.text('Please view the certificate directly from the employee profile.', 20, 150, { maxWidth: 170 });
+        
+        // Add footer info
+        addCertificateFooter(pdf, employeeName, employeeId);
+    }
+
+    // Show PDF preview option
+    function showPDFPreview(pdf, employeeName, employeeId) {
+        // Create preview modal
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        `;
+        
+        const modalContent = document.createElement('div');
+        modalContent.style.cssText = `
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        `;
+        
+        const pageCount = pdf.internal.pages.length;
+        
+        modalContent.innerHTML = `
+            <h3 style="margin-bottom: 1rem; color: #333;">PDF Generated Successfully!</h3>
+            <p style="margin-bottom: 1.5rem; color: #666;">
+                Your employee profile PDF has been generated with <strong>${pageCount}</strong> pages.
+            </p>
+            <p style="margin-bottom: 1.5rem; color: #666; font-size: 0.9rem;">
+                Pages 1-2: Employee Details<br>
+                Pages 3+: Individual Certificates (One per page)<br>
+                <small>Note: PDF certificates are converted to images and embedded</small>
+            </p>
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                <button id="downloadPdf" style="
+                    background: #28a745;
+                    color: white;
+                    border: none;
+                    padding: 0.8rem 1.5rem;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    font-weight: bold;
+                ">
+                    <i class="fas fa-download"></i> Download PDF
+                </button>
+                <button id="previewPdf" style="
+                    background: #17a2b8;
+                    color: white;
+                    border: none;
+                    padding: 0.8rem 1.5rem;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    font-weight: bold;
+                ">
+                    <i class="fas fa-eye"></i> Preview PDF
+                </button>
+                <button id="cancelPdf" style="
+                    background: #6c757d;
+                    color: white;
+                    border: none;
+                    padding: 0.8rem 1.5rem;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    font-weight: bold;
+                ">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+            </div>
+        `;
+        
+        modal.appendChild(modalContent);
+        document.body.appendChild(modal);
+        
+        // Event listeners for modal buttons
+        document.getElementById('downloadPdf').onclick = () => {
+            pdf.save(`Employee_Profile_${employeeId}_${employeeName.replace(/\s+/g, '_')}.pdf`);
+            document.body.removeChild(modal);
+        };
+        
+        document.getElementById('previewPdf').onclick = () => {
+            const pdfBlob = pdf.output('blob');
+            const pdfUrl = URL.createObjectURL(pdfBlob);
+            window.open(pdfUrl, '_blank');
+        };
+        
+        document.getElementById('cancelPdf').onclick = () => {
+            document.body.removeChild(modal);
+        };
+        
+        // Close modal on background click
+        modal.onclick = (e) => {
+            if (e.target === modal) {
+                document.body.removeChild(modal);
+            }
+        };
+    }
+
+    function gotodash(){
+        document.location.href = "{% url 'dashboard' %}";
+    }
+</script>
+</body>
+</html>
